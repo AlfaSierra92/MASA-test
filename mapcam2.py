@@ -26,7 +26,7 @@ def parse_gprmc(sentence):
 
 
 def haversine(lat1, lon1, lat2, lon2):
-    R = 6371  # Raggio della Terra in km
+    R = 6371000  # Raggio della Terra in km
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     delta_phi = math.radians(lat2 - lat1)
     delta_lambda = math.radians(lon2 - lon1)
@@ -69,7 +69,7 @@ with open(input_json, "r", encoding="utf-8") as f:
 
 # Creare la mappa
 m = folium.Map(location=udp_coords[0] if udp_coords else cam_coords[0] if cam_coords else [0, 0], zoom_start=18, max_zoom=20)
-m.add_child(MeasureControl(primary_length_unit='kilometers'))
+m.add_child(MeasureControl(primary_length_unit='meters'))
 
 # Aggiungere tracce UDP
 for lat, lon in udp_coords:
