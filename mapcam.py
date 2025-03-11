@@ -24,16 +24,15 @@ def extract_coordinates_from_cam(pkt):
     try:
         # Estrai il payload del pacchetto
         raw_payload = bytes(pkt.payload)
-        index = raw_payload.find(b'\x4D')
         # I byte 43-46 per la latitudine, e 47-50 per la longitudine (esempio)
-        #lat_bytes = raw_payload[24:28]  # Latitudine in byte 43-46
-        #lon_bytes = raw_payload[28:32]  # Longitudine in byte 47-50
-        lat_bytes = raw_payload[64:68]  # Latitudine in byte 43-46
+        lat_bytes_haura = raw_payload[24:28]  # Latitudine in byte 43-46
+        lon_bytes_haura = raw_payload[28:32]  # Longitudine in byte 47-50
+        lat_bytes = raw_payload[53:57]  # Latitudine in byte 43-46
+        lon_bytes = raw_payload[57:61]
 
         # Convertiamo i byte in numeri interi (big-endian per i numeri interi)
-        lat_int = int.from_bytes(lat_bytes, byteorder='big')  # Latitudine
-        lon_int = int.from_bytes(lon_bytes, byteorder='big')  # Longitudine
-
+        lat_int = int.from_bytes(lat_bytes, byteorder='big', signed=True)  # Latitudine
+        lon_int = int.from_bytes(lon_bytes, byteorder='big', signed=True)  # Longitudine
         # Per esempio, se il valore rappresenta una latitudine/longitudine su una scala decimale
         lat = lat_int / 10000000.0  # Ad esempio, dividiamo per 1 milione per ottenere la latitudine/longitudine in formato decimale
         lon = lon_int / 10000000.0  # Stessa cosa per la longitudine
@@ -44,7 +43,7 @@ def extract_coordinates_from_cam(pkt):
         return None
 
 # Caricare il file PCAP
-input_pcap = "test555.pcap"  # Modifica con il percorso corretto
+input_pcap = "test2222.pcap"  # Modifica con il percorso corretto
 packets = rdpcap(input_pcap)
 
 # Liste di coordinate
