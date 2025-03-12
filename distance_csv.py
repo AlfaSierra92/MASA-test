@@ -1,5 +1,6 @@
 import json
 import sys
+import csv
 from scapy.all import rdpcap, UDP
 from geopy.distance import geodesic
 
@@ -68,25 +69,44 @@ def calculate_distance(udp_id, cam_id, udp_coords, cam_coords):
         distance = geodesic(udp_coords_found, cam_coords_found).meters
         print(f"Distanza tra UDP ID {udp_id} e CAM ID {cam_id}: {distance:.2f} metri")
     else:
-        print("Non sono state trovate le coordinate per gli ID dati.")
+        print(f"Non sono state trovate le coordinate per gli ID UDP {udp_id} e CAM {cam_id}.")
+
+
+def load_csv_pairs(csv_file):
+    pairs = []
+    with open(csv_file, mode='r', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        next(reader)  # Salta l'intestazione, se presente
+        for row in reader:
+            if len(row) == 2:  # Assumiamo che ogni riga contenga un UDP ID e un CAM ID
+                try:
+                    udp_id = int(row[0])
+                    cam_id = int(row[1])
+                    pairs.append((udp_id, cam_id))
+                except ValueError:
+                    print(f"Errore nel parsing della riga: {row}")
+    return pairs
 
 
 def main():
-    #if len(sys.argv) != 4:
-    #    print("Uso: python script.py <file_pcap> <file_json> <udp_id> <cam_id>")
-    #    sys.exit(1)
+    if len(sys.argv) != 4:
+        print("Uso: python script.py <file_pcap> <file_json> <file_csv>")
+        sys.exit(1)
 
     pcap_file = sys.argv[1]
     json_file = sys.argv[2]
-    udp_id = int(sys.argv[3])
-    cam_id = int(sys.argv[4])
+    csv_file = sys.argv[3]
 
     # Caricare le coordinate
     udp_coords = load_udp_coordinates(pcap_file)
     cam_coords = load_cam_coordinates(json_file)
 
-    # Calcolare la distanza
-    calculate_distance(udp_id, cam_id, udp_coords, cam_coords)
+    # Caricare le coppie di ID dal CSV
+    pairs = load_csv_pairs(csv_file)
+
+    # Calcolare la distanza per ogni coppia
+    for udp_id, cam_id in pairs:
+        calculate_distance(udp_id, cam_id, udp_coords, cam_coords)
 
 
 if __name__ == "__main__":
