@@ -65,17 +65,17 @@ for pkt in packets:
             cam_coords.append(coords)
 
 # Creare la mappa
-m = folium.Map(location=udp_coords[0] if udp_coords else [0, 0], zoom_start=14)
+m = folium.Map(location=udp_coords[0] if udp_coords else [0, 0], zoom_start=14, max_zoom=25)
 
 # Aggiungere tracce UDP
 for lat, lon in udp_coords:
-    folium.CircleMarker([lat, lon], radius=5, color='blue', fill=True, fill_color='blue', fill_opacity=0.6).add_to(m)
+    folium.CircleMarker([lat, lon], radius=1, color='blue', fill=True, fill_color='blue', fill_opacity=0.6).add_to(m)
 
 # Aggiungere tracce CAM
 for lat, lon in cam_coords:
-    folium.CircleMarker([lat, lon], radius=5, color='red', fill=True, fill_color='red', fill_opacity=0.6).add_to(m)
+    folium.CircleMarker([lat, lon], radius=1, color='red', fill=True, fill_color='red', fill_opacity=0.6).add_to(m)
 
 # Salvare la mappa
-map_output = "map.html"
+map_output = "map_haura.html"
 m.save(map_output)
 print(f"Mappa salvata come {map_output}")

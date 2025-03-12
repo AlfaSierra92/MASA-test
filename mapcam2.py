@@ -1,6 +1,7 @@
 import folium
 import json
 import math
+import csv
 from scapy.all import rdpcap, UDP
 from folium.plugins import MeasureControl
 
@@ -44,8 +45,17 @@ for i, pkt in enumerate(packets, start=1):
                 if coords:
                     udp_coords.append((i, coords[0], coords[1]))  # (ID, lat, lon)
 
+# Salvare i dati UDP in un CSV
+csv_output = "udp_ids.csv"
+with open(csv_output, "w", newline="", encoding="utf-8") as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["ID"])
+    for packet_id in udp_coords:
+        writer.writerow([packet_id[0]])
+print(f"Dati UDP salvati in {csv_output}")
+
 # Caricare coordinate dai pacchetti CAM in JSON
-input_json = "cam_data.json"  # Modifica con il percorso corretto
+input_json = "test2222_parsed.json"  # Modifica con il percorso corretto
 with open(input_json, "r", encoding="utf-8") as f:
     cam_data = json.load(f)
     for i, packet in enumerate(cam_data, start=1):
@@ -57,7 +67,7 @@ with open(input_json, "r", encoding="utf-8") as f:
             print(f"Errore nel parsing del JSON: {e}")
 
 # Creare la mappa
-m = folium.Map(location=udp_coords[0][1:] if udp_coords else cam_coords[0][1:] if cam_coords else [0, 0], zoom_start=18, max_zoom=20)
+m = folium.Map(location=udp_coords[0][1:] if udp_coords else cam_coords[0][1:] if cam_coords else [0, 0], zoom_start=18, max_zoom=25)
 m.add_child(MeasureControl(primary_length_unit='meters'))
 
 # Aggiungere tracce UDP con popup

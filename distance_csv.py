@@ -67,7 +67,7 @@ def calculate_distance(udp_id, cam_id, udp_coords, cam_coords):
 
     if udp_coords_found and cam_coords_found:
         distance = geodesic(udp_coords_found, cam_coords_found).meters
-        print(f"Distanza tra UDP ID {udp_id} e CAM ID {cam_id}: {distance:.2f} metri")
+        print(f"{udp_id},{cam_id},{distance:.5f}")
     else:
         print(f"Non sono state trovate le coordinate per gli ID UDP {udp_id} e CAM {cam_id}.")
 
