@@ -25,10 +25,10 @@ def extract_coordinates_from_cam(pkt):
         # Estrai il payload del pacchetto
         raw_payload = bytes(pkt.payload)
         # I byte 43-46 per la latitudine, e 47-50 per la longitudine (esempio)
-        lat_bytes_haura = raw_payload[24:28]  # Latitudine in byte 43-46
-        lon_bytes_haura = raw_payload[28:32]  # Longitudine in byte 47-50
-        lat_bytes = raw_payload[53:57]  # Latitudine in byte 43-46
-        lon_bytes = raw_payload[57:61]
+        lat_bytes = raw_payload[24:28]  # Latitudine in byte 43-46
+        lon_bytes = raw_payload[28:32]  # Longitudine in byte 47-50
+        #lat_bytes = raw_payload[53:57]  # Latitudine in byte 43-46
+        #lon_bytes = raw_payload[57:61]
 
         # Convertiamo i byte in numeri interi (big-endian per i numeri interi)
         lat_int = int.from_bytes(lat_bytes, byteorder='big', signed=True)  # Latitudine

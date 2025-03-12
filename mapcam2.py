@@ -25,19 +25,8 @@ def parse_gprmc(sentence):
     return lat, lon
 
 
-def haversine(lat1, lon1, lat2, lon2):
-    R = 6371000  # Raggio della Terra in km
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    delta_phi = math.radians(lat2 - lat1)
-    delta_lambda = math.radians(lon2 - lon1)
-
-    a = math.sin(delta_phi / 2.0) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2.0) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c  # Distanza in km
-
-
 # Caricare il file PCAP
-input_pcap = "test555.pcap"  # Modifica con il percorso corretto
+input_pcap = "test2222.pcap"  # Modifica con il percorso corretto
 packets = rdpcap(input_pcap)
 
 # Liste di coordinate
@@ -45,7 +34,7 @@ udp_coords = []
 cam_coords = []
 
 # Estrarre coordinate dai pacchetti UDP
-for pkt in packets:
+for i, pkt in enumerate(packets, start=1):
     if pkt.haslayer(UDP) and hasattr(pkt[UDP], "payload"):
         raw_payload = bytes(pkt[UDP].payload)
         payload_str = raw_payload.decode(errors="ignore")
@@ -53,31 +42,47 @@ for pkt in packets:
             if "$GPRMC" in line:
                 coords = parse_gprmc(line)
                 if coords:
-                    udp_coords.append(coords)
+                    udp_coords.append((i, coords[0], coords[1]))  # (ID, lat, lon)
 
 # Caricare coordinate dai pacchetti CAM in JSON
 input_json = "cam_data.json"  # Modifica con il percorso corretto
 with open(input_json, "r", encoding="utf-8") as f:
     cam_data = json.load(f)
-    for packet in cam_data:
+    for i, packet in enumerate(cam_data, start=1):
         try:
             lat = int(packet["Latitude"]) / 10000000.0
             lon = int(packet["Longitude"]) / 10000000.0
-            cam_coords.append((lat, lon))
+            cam_coords.append((i, lat, lon))  # (ID, lat, lon)
         except (KeyError, ValueError) as e:
             print(f"Errore nel parsing del JSON: {e}")
 
 # Creare la mappa
-m = folium.Map(location=udp_coords[0] if udp_coords else cam_coords[0] if cam_coords else [0, 0], zoom_start=18, max_zoom=20)
+m = folium.Map(location=udp_coords[0][1:] if udp_coords else cam_coords[0][1:] if cam_coords else [0, 0], zoom_start=18, max_zoom=20)
 m.add_child(MeasureControl(primary_length_unit='meters'))
 
-# Aggiungere tracce UDP
-for lat, lon in udp_coords:
-    folium.CircleMarker([lat, lon], radius=1, color='blue', fill=True, fill_color='blue', fill_opacity=0.6).add_to(m)
+# Aggiungere tracce UDP con popup
+for packet_id, lat, lon in udp_coords:
+    folium.CircleMarker(
+        [lat, lon],
+        radius=3,  # Marker più piccolo
+        color='blue',
+        fill=True,
+        fill_color='blue',
+        fill_opacity=0.6,
+        popup=f"UDP Packet ID: {packet_id}<br>Lat: {lat:.6f}, Lon: {lon:.6f}"
+    ).add_to(m)
 
-# Aggiungere tracce CAM
-for lat, lon in cam_coords:
-    folium.CircleMarker([lat, lon], radius=1, color='red', fill=True, fill_color='red', fill_opacity=0.6).add_to(m)
+# Aggiungere tracce CAM con popup
+for packet_id, lat, lon in cam_coords:
+    folium.CircleMarker(
+        [lat, lon],
+        radius=3,  # Marker più piccolo
+        color='red',
+        fill=True,
+        fill_color='red',
+        fill_opacity=0.6,
+        popup=f"CAM Packet ID: {packet_id}<br>Lat: {lat:.6f}, Lon: {lon:.6f}"
+    ).add_to(m)
 
 # Salvare la mappa
 map_output = "map.html"
