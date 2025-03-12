@@ -2,6 +2,7 @@ import folium
 import json
 import math
 import csv
+import datetime
 from scapy.all import rdpcap, UDP
 from folium.plugins import MeasureControl
 
@@ -33,6 +34,7 @@ packets = rdpcap(input_pcap)
 # Liste di coordinate
 udp_coords = []
 cam_coords = []
+udp_data = []  # Lista per i dati UDP in formato JSON
 
 # Estrarre coordinate dai pacchetti UDP
 for i, pkt in enumerate(packets, start=1):
@@ -45,14 +47,27 @@ for i, pkt in enumerate(packets, start=1):
                 if coords:
                     udp_coords.append((i, coords[0], coords[1]))  # (ID, lat, lon)
 
-# Salvare i dati UDP in un CSV
-csv_output = "udp_ids.csv"
-with open(csv_output, "w", newline="", encoding="utf-8") as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(["ID"])
-    for packet_id in udp_coords:
-        writer.writerow([packet_id[0]])
-print(f"Dati UDP salvati in {csv_output}")
+                    # Aggiungere il dizionario con i dati del pacchetto UDP
+                    udp_data.append({
+                        "Packet_ID": i,
+                        "timestamp": datetime.datetime.now().strftime("%b %d, %Y %H:%M:%S.%f") + " CET",
+                        "source_address": pkt[UDP].sport,  # Esempio, puoi modificare con l'indirizzo che desideri
+                        "Protocol_version": "2",  # Modifica in base ai tuoi dati
+                        "stationType": "5",  # Modifica in base ai tuoi dati
+                        "messageID": "2",  # Modifica in base ai tuoi dati
+                        "stationID": "10",  # Modifica in base ai tuoi dati
+                        "Longitude": str(int(coords[1] * 10000000)),  # Conversione della longitudine
+                        "Latitude": str(int(coords[0] * 10000000)),   # Conversione della latitudine
+                        "Altitude": "6050",  # Modifica in base ai tuoi dati
+                        "Speed": "1163"  # Modifica in base ai tuoi dati
+                    })
+
+# Salvare i dati UDP in un JSON
+udp_json_output = "udp_data.json"
+with open(udp_json_output, "w", newline="", encoding="utf-8") as jsonfile:
+    json.dump(udp_data, jsonfile, indent=4)
+
+print(f"Dati UDP salvati in {udp_json_output}")
 
 # Caricare coordinate dai pacchetti CAM in JSON
 input_json = "test2222_parsed.json"  # Modifica con il percorso corretto
